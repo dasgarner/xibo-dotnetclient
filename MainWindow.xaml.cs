@@ -195,6 +195,20 @@ namespace XiboClient
             // Initialise the database
             StatManager.Instance.InitDatabase();
 
+            // Configure ffmpeg
+            // TODO: how do we want to distribute/configure this?
+            // do we make an assumption on where it will be (like the watchdog?)
+            if (Directory.Exists(@"S:\Workspace\ffmpeg"))
+            {
+                Unosquare.FFME.Library.FFmpegDirectory = @"S:\Workspace\ffmpeg";
+                Unosquare.FFME.MediaElement.FFmpegMessageLogged += OnMediaFFmpegMessageLogged;
+                ApplicationSettings.Default.FfmpegAvailable = true;
+            }
+            else
+            {
+                ApplicationSettings.Default.FfmpegAvailable = false;
+            }
+
             Trace.WriteLine(new LogMessage("MainForm", "Player Initialised"), LogType.Info.ToString());
         }
 
@@ -1136,6 +1150,23 @@ namespace XiboClient
 
             // Yield and restart
             _schedule.NextLayout();
+        }
+
+
+        /// <summary>
+        /// Handles the FFmpegMessageLogged event of the MediaElement control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="MediaLogMessageEventArgs"/> instance containing the event data.</param>
+        private void OnMediaFFmpegMessageLogged(object sender, Unosquare.FFME.Common.MediaLogMessageEventArgs e)
+        {
+            if (e.MessageType != Unosquare.FFME.Common.MediaLogMessageType.Warning && e.MessageType != Unosquare.FFME.Common.MediaLogMessageType.Error)
+                return;
+
+            if (string.IsNullOrWhiteSpace(e.Message) == false)
+                return;
+
+            Debug.WriteLine(e);
         }
     }
 }

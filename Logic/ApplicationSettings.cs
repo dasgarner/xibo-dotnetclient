@@ -53,6 +53,11 @@ namespace XiboClient
         public string ClientVersion { get; } = "2 R254.1";
         public string Version { get; } = "5";
         public int ClientCodeVersion { get; } = 254;
+        
+        /// <summary>
+        /// Is FFmpeg available?
+        /// </summary>
+        public bool FfmpegAvailable = false;
 
         private ApplicationSettings()
         {
@@ -71,6 +76,7 @@ namespace XiboClient
             ExcludedProperties.Add("ClientVersion");
             ExcludedProperties.Add("Version");
             ExcludedProperties.Add("ClientCodeVersion");
+            ExcludedProperties.Add("FfmpegAvailable");
         }
 
         /// <summary>
@@ -366,6 +372,8 @@ namespace XiboClient
 
         public bool EnableExpiredFileDeletion { get; set; }
         public bool ForceHttps { get; set; }
+        public bool UseFFmpeg { get; set; }
+        public bool UseFFmpegForHls { get; set; }
 
         public int LibraryAgentInterval { get; set; }
 

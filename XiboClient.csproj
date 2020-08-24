@@ -150,7 +150,9 @@
     <Compile Include="Rendering\PowerPoint.cs" />
     <Compile Include="Rendering\ShellCommand.cs" />
     <Compile Include="Rendering\Spacer.cs" />
+    <Compile Include="Rendering\VideoFFmpeg.cs" />
     <Compile Include="Rendering\Video.cs" />
+    <Compile Include="Rendering\VideoMedia.cs" />
     <Compile Include="Rendering\WebCef.cs" />
     <Compile Include="Rendering\WebEdge.cs" />
     <Compile Include="Rendering\WebIe.cs" />
@@ -288,6 +290,9 @@
     </PackageReference>
     <PackageReference Include="EmbedIO">
       <Version>3.4.3</Version>
+    </PackageReference>
+    <PackageReference Include="FFME.Windows">
+      <Version>4.2.330</Version>
     </PackageReference>
     <PackageReference Include="GeoJSON.Net">
       <Version>1.2.15</Version>

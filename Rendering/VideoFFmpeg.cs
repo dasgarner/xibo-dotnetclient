@@ -18,15 +18,19 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with Xibo.  If not, see <http://www.gnu.org/licenses/>.
  */
+using FFmpeg.AutoGen;
 using System;
 using System.Diagnostics;
+using System.Globalization;
 using System.IO;
+using System.Linq;
 using System.Windows;
-using System.Windows.Controls;
+using Unosquare.FFME;
+using Unosquare.FFME.Common;
 
 namespace XiboClient.Rendering
 {
-    class Video : VideoMedia
+    class VideoFFmpeg : VideoMedia
     {
         /// <summary>
         /// The Media element for Playback
@@ -37,12 +41,17 @@ namespace XiboClient.Rendering
         /// Constructor
         /// </summary>
         /// <param name="options"></param>
-        public Video(RegionOptions options) : base(options)
+        public VideoFFmpeg(RegionOptions options) : base(options)
         {
             
         }
 
-        private void MediaElement_MediaFailed(object sender, ExceptionRoutedEventArgs e)
+        /// <summary>
+        /// Media Failed to Load
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void MediaElement_MediaFailed(object sender, MediaFailedEventArgs e)
         {
             // Log and expire
             Trace.WriteLine(new LogMessage("Video", "MediaElement_MediaFailed: Media Failed. E = " + e.ErrorException.Message), LogType.Error.ToString());
@@ -50,7 +59,12 @@ namespace XiboClient.Rendering
             Expired = true;
         }
 
-        private void MediaElement_MediaEnded(object sender, System.Windows.RoutedEventArgs e)
+        /// <summary>
+        /// Media Ended
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void MediaElement_MediaEnded(object sender, EventArgs e)
         {
             // Should we loop?
             if (isLooping)
@@ -98,10 +112,12 @@ namespace XiboClient.Rendering
             }
 
             // Create a Media Element
-            this.mediaElement = new MediaElement();
-            this.mediaElement.Volume = this.volume;
-            this.mediaElement.IsMuted = this.Muted;
-            this.mediaElement.LoadedBehavior = MediaState.Manual;
+            this.mediaElement = new MediaElement
+            {
+                Volume = this.volume,
+                IsMuted = this.Muted,
+                LoadedBehavior = MediaPlaybackState.Manual
+            };
 
             if (!this.ShouldBeVisible)
             {
@@ -111,10 +127,12 @@ namespace XiboClient.Rendering
             }
 
             // Events
+            this.mediaElement.MediaOpening += MediaElement_MediaOpening;
             this.mediaElement.MediaOpened += MediaElement_MediaOpened;
             this.mediaElement.Loaded += MediaElement_Loaded;
             this.mediaElement.MediaEnded += MediaElement_MediaEnded;
             this.mediaElement.MediaFailed += MediaElement_MediaFailed;
+            this.mediaElement.MessageLogged += MediaElement_MediaMessageLogged;
 
             // Do we need to determine the end time ourselves?
             if (_duration == 0)
@@ -132,7 +150,7 @@ namespace XiboClient.Rendering
             try
             {
                 // Start Player
-                this.mediaElement.Source = uri;
+                this.mediaElement.Open(uri);
 
                 this.MediaScene.Children.Add(this.mediaElement);
 
@@ -148,11 +166,69 @@ namespace XiboClient.Rendering
         }
 
         /// <summary>
+        /// Fired when a new Media item is opening
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void MediaElement_MediaOpening(object sender, MediaOpeningEventArgs e)
+        {
+            // This might be something we can do if we make CMS modifications to push SRT files down with the video.
+            // see: https://github.com/xibosignage/xibo-dotnetclient/issues/163
+            // Get the local file path from the URL (if possible)
+            /*var mediaFilePath = string.Empty;
+            try
+            {
+                var url = new Uri(e.Info.MediaSource);
+                mediaFilePath = url.IsFile || url.IsUnc ? Path.GetFullPath(url.LocalPath) : string.Empty;
+            }
+            catch { *//* Ignore Exceptions *//* }
+
+            // Look for side loadable SRT files
+            if (string.IsNullOrWhiteSpace(mediaFilePath) == false)
+            {
+                var srtFilePath = Path.ChangeExtension(mediaFilePath, "srt");
+                if (File.Exists(srtFilePath))
+                {
+                    e.Options.SubtitlesSource = srtFilePath;
+                }
+            }*/
+
+            // Handle Variant Bitrates
+            if (e.Options.VideoStream.Metadata.ContainsKey("variant_bitrate"))
+            {
+                Debug.WriteLine("Variant Bitrate detected, choosing highest");
+
+                var videoStreams = e.Info.Streams.Where(kvp => kvp.Value.CodecType == AVMediaType.AVMEDIA_TYPE_VIDEO).Select(kvp => kvp.Value);
+                foreach (var stream in videoStreams)
+                {
+                    // Choose the best stream somehow
+                    try
+                    {
+                        e.Options.VideoStream.Metadata.TryGetValue("variant_bitrate", out string currentBitRateString);
+                        stream.Metadata.TryGetValue("variant_bitrate", out string bitRateString);
+
+                        int currentBitRate = int.Parse(currentBitRateString, NumberFormatInfo.InvariantInfo);
+                        int bitRate = int.Parse(bitRateString, NumberFormatInfo.InvariantInfo);
+
+                        if (bitRate > currentBitRate)
+                        {
+                            e.Options.VideoStream = stream;
+                        }
+                    }
+                    catch
+                    {
+                        /* Ignored */
+                    }
+                }
+            }
+        }
+
+        /// <summary>
         /// Fired when the video is loaded and ready to seek
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        private void MediaElement_MediaOpened(object sender, RoutedEventArgs e)
+        private void MediaElement_MediaOpened(object sender, Unosquare.FFME.Common.MediaOpenedEventArgs e)
         {
             Debug.WriteLine("MediaElement_MediaOpened", "Video");
 
@@ -161,6 +237,22 @@ namespace XiboClient.Rendering
             {
                 this.mediaElement.Position = TimeSpan.FromSeconds(this._position);
             }
+
+            // Play
+            this.mediaElement.Play();
+        }
+
+        /// <summary>
+        /// Handles the MessageLogged event of the Media control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="MediaLogMessageEventArgs" /> instance containing the event data.</param>
+        private void MediaElement_MediaMessageLogged(object sender, MediaLogMessageEventArgs e)
+        {
+            if (e.MessageType == MediaLogMessageType.Trace)
+                return;
+
+            Debug.WriteLine(e);
         }
 
         /// <summary>
@@ -169,15 +261,15 @@ namespace XiboClient.Rendering
         public override void Stop(bool regionStopped)
         {
             // Remove the event handlers
+            this.mediaElement.MediaOpening -= MediaElement_MediaOpening;
             this.mediaElement.MediaOpened -= MediaElement_MediaOpened;
             this.mediaElement.Loaded -= MediaElement_Loaded;
             this.mediaElement.MediaEnded -= MediaElement_MediaEnded;
             this.mediaElement.MediaFailed -= MediaElement_MediaFailed;
+            this.mediaElement.MessageLogged -= MediaElement_MediaMessageLogged;
 
             // Try and clear some memory
             this.mediaElement.Close();
-            this.mediaElement.Clock = null;
-            this.mediaElement.Source = null;
             this.mediaElement = null;
 
             base.Stop(regionStopped);

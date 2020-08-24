@@ -599,12 +599,12 @@ namespace XiboClient.Rendering
 
                 case "video":
                     options.uri = ApplicationSettings.Default.LibraryPath + @"\" + options.uri;
-                    media = new Video(options);
+                    media = VideoMedia.GetConfiguredVideoMedia(options);
                     break;
 
                 case "localvideo":
                     // Local video does not update the URI with the library path, it just takes what has been provided in the Widget.
-                    media = new Video(options);
+                    media = VideoMedia.GetConfiguredVideoMedia(options);
                     break;
 
                 case "audio":
@@ -642,7 +642,14 @@ namespace XiboClient.Rendering
                     break;
 
                 case "hls":
-                    media = new WebEdge(options);
+                    if (ApplicationSettings.Default.FfmpegAvailable && ApplicationSettings.Default.UseFFmpegForHls)
+                    {
+                        media = new VideoFFmpeg(options);
+                    }
+                    else
+                    {
+                        media = new WebEdge(options);
+                    }
                     break;
 
                 default:
