@@ -50,9 +50,9 @@ namespace XiboClient
         /// </summary>
         private List<string> ExcludedProperties;
 
-        public string ClientVersion { get; } = "2 R254.1";
+        public string ClientVersion { get; } = "2 R255.1";
         public string Version { get; } = "5";
-        public int ClientCodeVersion { get; } = 254;
+        public int ClientCodeVersion { get; } = 255;
         
         /// <summary>
         /// Is FFmpeg available?
