@@ -199,12 +199,13 @@ namespace XiboClient
             string ffmpegDirectory = Path.GetDirectoryName(Process.GetCurrentProcess().MainModule.FileName) + @"\ffmpeg";
 
 #if DEBUG
-            ffmpegDirectory = @"S:\Workspace\ffmpeg";
+            ffmpegDirectory = @"S:\Workspace\ffmpeg\lgpl";
 #endif
 
             if (Directory.Exists(ffmpegDirectory))
             {
                 Unosquare.FFME.Library.FFmpegDirectory = @"S:\Workspace\ffmpeg";
+                Unosquare.FFME.Library.FFmpegLoadModeFlags = FFmpeg.AutoGen.FFmpegLoadMode.MinimumFeatures;
                 Unosquare.FFME.MediaElement.FFmpegMessageLogged += OnMediaFFmpegMessageLogged;
                 ApplicationSettings.Default.FfmpegAvailable = true;
             }
