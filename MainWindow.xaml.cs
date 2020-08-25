@@ -196,9 +196,13 @@ namespace XiboClient
             StatManager.Instance.InitDatabase();
 
             // Configure ffmpeg
-            // TODO: how do we want to distribute/configure this?
-            // do we make an assumption on where it will be (like the watchdog?)
-            if (Directory.Exists(@"S:\Workspace\ffmpeg"))
+            string ffmpegDirectory = Path.GetDirectoryName(Process.GetCurrentProcess().MainModule.FileName) + @"\ffmpeg";
+
+#if DEBUG
+            ffmpegDirectory = @"S:\Workspace\ffmpeg";
+#endif
+
+            if (Directory.Exists(ffmpegDirectory))
             {
                 Unosquare.FFME.Library.FFmpegDirectory = @"S:\Workspace\ffmpeg";
                 Unosquare.FFME.MediaElement.FFmpegMessageLogged += OnMediaFFmpegMessageLogged;
