@@ -126,6 +126,12 @@ namespace XiboClient.Rendering
                 this.mediaElement.Visibility = Visibility.Hidden;
             }
 
+            // Handle stretching
+            if (Stretch)
+            {
+                this.mediaElement.Stretch = System.Windows.Media.Stretch.Fill;
+            }
+
             // Events
             this.mediaElement.MediaOpening += MediaElement_MediaOpening;
             this.mediaElement.MediaOpened += MediaElement_MediaOpened;
@@ -172,52 +178,56 @@ namespace XiboClient.Rendering
         /// <param name="e"></param>
         private void MediaElement_MediaOpening(object sender, MediaOpeningEventArgs e)
         {
-            // This might be something we can do if we make CMS modifications to push SRT files down with the video.
-            // see: https://github.com/xibosignage/xibo-dotnetclient/issues/163
-            // Get the local file path from the URL (if possible)
-            /*var mediaFilePath = string.Empty;
-            try
+            // We only do things on videos
+            if (e.Options.VideoStream is StreamInfo videoStream)
             {
-                var url = new Uri(e.Info.MediaSource);
-                mediaFilePath = url.IsFile || url.IsUnc ? Path.GetFullPath(url.LocalPath) : string.Empty;
-            }
-            catch { *//* Ignore Exceptions *//* }
-
-            // Look for side loadable SRT files
-            if (string.IsNullOrWhiteSpace(mediaFilePath) == false)
-            {
-                var srtFilePath = Path.ChangeExtension(mediaFilePath, "srt");
-                if (File.Exists(srtFilePath))
+                // This might be something we can do if we make CMS modifications to push SRT files down with the video.
+                // see: https://github.com/xibosignage/xibo-dotnetclient/issues/163
+                // Get the local file path from the URL (if possible)
+                /*var mediaFilePath = string.Empty;
+                try
                 {
-                    e.Options.SubtitlesSource = srtFilePath;
+                    var url = new Uri(e.Info.MediaSource);
+                    mediaFilePath = url.IsFile || url.IsUnc ? Path.GetFullPath(url.LocalPath) : string.Empty;
                 }
-            }*/
+                catch { *//* Ignore Exceptions *//* }
 
-            // Handle Variant Bitrates
-            if (e.Options.VideoStream.Metadata.ContainsKey("variant_bitrate"))
-            {
-                Debug.WriteLine("Variant Bitrate detected, choosing highest");
-
-                var videoStreams = e.Info.Streams.Where(kvp => kvp.Value.CodecType == AVMediaType.AVMEDIA_TYPE_VIDEO).Select(kvp => kvp.Value);
-                foreach (var stream in videoStreams)
+                // Look for side loadable SRT files
+                if (string.IsNullOrWhiteSpace(mediaFilePath) == false)
                 {
-                    // Choose the best stream somehow
-                    try
+                    var srtFilePath = Path.ChangeExtension(mediaFilePath, "srt");
+                    if (File.Exists(srtFilePath))
                     {
-                        e.Options.VideoStream.Metadata.TryGetValue("variant_bitrate", out string currentBitRateString);
-                        stream.Metadata.TryGetValue("variant_bitrate", out string bitRateString);
-
-                        int currentBitRate = int.Parse(currentBitRateString, NumberFormatInfo.InvariantInfo);
-                        int bitRate = int.Parse(bitRateString, NumberFormatInfo.InvariantInfo);
-
-                        if (bitRate > currentBitRate)
-                        {
-                            e.Options.VideoStream = stream;
-                        }
+                        e.Options.SubtitlesSource = srtFilePath;
                     }
-                    catch
+                }*/
+
+                // Handle Variant Bitrates
+                if (e.Options.VideoStream.Metadata.ContainsKey("variant_bitrate"))
+                {
+                    Debug.WriteLine("Variant Bitrate detected, choosing highest");
+
+                    var videoStreams = e.Info.Streams.Where(kvp => kvp.Value.CodecType == AVMediaType.AVMEDIA_TYPE_VIDEO).Select(kvp => kvp.Value);
+                    foreach (var stream in videoStreams)
                     {
-                        /* Ignored */
+                        // Choose the best stream somehow
+                        try
+                        {
+                            e.Options.VideoStream.Metadata.TryGetValue("variant_bitrate", out string currentBitRateString);
+                            stream.Metadata.TryGetValue("variant_bitrate", out string bitRateString);
+
+                            int currentBitRate = int.Parse(currentBitRateString, NumberFormatInfo.InvariantInfo);
+                            int bitRate = int.Parse(bitRateString, NumberFormatInfo.InvariantInfo);
+
+                            if (bitRate > currentBitRate)
+                            {
+                                e.Options.VideoStream = stream;
+                            }
+                        }
+                        catch
+                        {
+                            /* Ignored */
+                        }
                     }
                 }
             }

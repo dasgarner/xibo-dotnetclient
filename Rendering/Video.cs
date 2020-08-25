@@ -18,6 +18,7 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with Xibo.  If not, see <http://www.gnu.org/licenses/>.
  */
+using Org.BouncyCastle.Crypto.Agreement.Srp;
 using System;
 using System.Diagnostics;
 using System.IO;
@@ -108,6 +109,12 @@ namespace XiboClient.Rendering
                 this.mediaElement.Width = 0;
                 this.mediaElement.Height = 0;
                 this.mediaElement.Visibility = Visibility.Hidden;
+            }
+
+            // Handle stretching
+            if (Stretch)
+            {
+                this.mediaElement.Stretch = System.Windows.Media.Stretch.Fill;
             }
 
             // Events

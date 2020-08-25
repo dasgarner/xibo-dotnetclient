@@ -36,6 +36,7 @@ namespace XiboClient.Rendering
         protected readonly bool isFullScreenRequest = false;
         protected bool ShouldBeVisible { get; set; }
         protected bool Muted { get; set; }
+        protected bool Stretch { get; set; }
 
         /// <summary>
         /// Should we seek to a position or not
@@ -68,6 +69,9 @@ namespace XiboClient.Rendering
 
             // Full Screen?
             this.isFullScreenRequest = options.Dictionary.Get("showFullScreen", "0") == "1";
+
+            // Scale type
+            Stretch = options.Dictionary.Get("scaleType", "aspect").ToLowerInvariant() == "stretch";
         }
 
         /// <summary>
