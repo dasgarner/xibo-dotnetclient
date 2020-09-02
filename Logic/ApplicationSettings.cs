@@ -369,6 +369,7 @@ namespace XiboClient
 
         public bool EnableExpiredFileDeletion { get; set; }
         public bool ForceHttps { get; set; }
+        public bool FfmpegAvailable { get; set; }
         public bool UseFFmpeg { get; set; }
         public bool UseFFmpegForHls { get; set; }
 
