@@ -146,22 +146,6 @@ namespace XiboClient
         /// </summary>
         public List<ScheduleItem> CurrentInterruptSchedule { get; private set; }
 
-        /// <summary>
-        /// Get or Set the current layout id
-        /// </summary>
-        public int CurrentLayoutId
-        {
-            get
-            {
-                return _currenctLayoutId;
-            }
-            set
-            {
-                lock (_locker)
-                    _currenctLayoutId = value;
-            }
-        }
-
         #endregion
 
         /// <summary>
@@ -192,9 +176,9 @@ namespace XiboClient
             GeoCoordinateWatcher watcher = null;
             try
             {
-                watcher = new GeoCoordinateWatcher(GeoPositionAccuracy.Default)
+                watcher = new GeoCoordinateWatcher(GeoPositionAccuracy.High)
                 {
-                    MovementThreshold = 100
+                    MovementThreshold = 10
                 };
                 watcher.PositionChanged += Watcher_PositionChanged;
                 watcher.StatusChanged += Watcher_StatusChanged;
@@ -386,11 +370,22 @@ namespace XiboClient
                     || coordinate.Latitude != ClientInfo.Instance.CurrentGeoLocation.Latitude
                     || coordinate.Longitude != ClientInfo.Instance.CurrentGeoLocation.Longitude)
                 {
+                    // Have we moved more that 100 meters?
+                    double distanceTo = 1000;
+                    if (ClientInfo.Instance.CurrentGeoLocation != null && !ClientInfo.Instance.CurrentGeoLocation.IsUnknown)
+                    {
+                        // Grab the distance from original position
+                        distanceTo = coordinate.GetDistanceTo(ClientInfo.Instance.CurrentGeoLocation);
+                    }                    
+
                     // Take the new one.
                     ClientInfo.Instance.CurrentGeoLocation = coordinate;
 
                     // Wake up the schedule manager for another pass
-                    RefreshSchedule = true;
+                    if (distanceTo >= 100)
+                    {
+                        RefreshSchedule = true;
+                    }
                 }
             }
         }
@@ -609,7 +604,7 @@ namespace XiboClient
                 // If we haven't already assessed this layout before, then check that it is valid
                 if (!validLayoutIds.Contains(layout.id))
                 {
-                    if (!ApplicationSettings.Default.ExpireModifiedLayouts && layout.id == CurrentLayoutId)
+                    if (!ApplicationSettings.Default.ExpireModifiedLayouts && layout.id == ClientInfo.Instance.CurrentLayoutId)
                     {
                         Trace.WriteLine(new LogMessage("ScheduleManager - LoadNewSchedule", "Skipping validity test for current layout."), LogType.Audit.ToString());
                     }

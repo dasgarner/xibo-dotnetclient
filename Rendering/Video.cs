@@ -173,7 +173,7 @@ namespace XiboClient.Rendering
         /// <summary>
         /// Stop
         /// </summary>
-        public override void Stop(bool regionStopped)
+        public override void Stopped()
         {
             // Remove the event handlers
             this.mediaElement.MediaOpened -= MediaElement_MediaOpened;
@@ -187,7 +187,7 @@ namespace XiboClient.Rendering
             this.mediaElement.Source = null;
             this.mediaElement = null;
 
-            base.Stop(regionStopped);
+            base.Stopped();
         }
     }
 }
