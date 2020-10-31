@@ -198,19 +198,20 @@ namespace XiboClient
             // Configure ffmpeg
             string ffmpegDirectory = Path.GetDirectoryName(Process.GetCurrentProcess().MainModule.FileName) + @"\ffmpeg";
 
-#if DEBUG
-            ffmpegDirectory = @"S:\Workspace\ffmpeg\lgpl";
-#endif
-
             if (Directory.Exists(ffmpegDirectory))
             {
-                Unosquare.FFME.Library.FFmpegDirectory = @"S:\Workspace\ffmpeg";
+                Unosquare.FFME.Library.FFmpegDirectory = ffmpegDirectory;
                 Unosquare.FFME.Library.FFmpegLoadModeFlags = FFmpeg.AutoGen.FFmpegLoadMode.MinimumFeatures;
                 Unosquare.FFME.MediaElement.FFmpegMessageLogged += OnMediaFFmpegMessageLogged;
+
+                Trace.WriteLine(new LogMessage("MainForm", "FFMpeg directory found."), LogType.Audit.ToString());
+                
                 ApplicationSettings.Default.FfmpegAvailable = true;
             }
             else
             {
+                Trace.WriteLine(new LogMessage("MainForm", "FFMpeg directory not found."), LogType.Audit.ToString());
+
                 ApplicationSettings.Default.FfmpegAvailable = false;
             }
 
@@ -1174,7 +1175,7 @@ namespace XiboClient
             if (string.IsNullOrWhiteSpace(e.Message) == false)
                 return;
 
-            Debug.WriteLine(e);
+            Trace.WriteLine(new LogMessage("MainForm", "OnMediaFFmpegMessageLogged: " + e.Message), LogType.Audit.ToString());
         }
     }
 }

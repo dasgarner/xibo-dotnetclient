@@ -54,6 +54,6 @@
   <ScreenShotSize>0</ScreenShotSize>
   <FallbackToInternetExplorer>false</FallbackToInternetExplorer>
   <AggregationLevel>individual</AggregationLevel>
-  <UseFFmpeg>false</UseFFmpeg>
+  <UseFFmpeg>true</UseFFmpeg>
   <UseFFmpegForHls>true</UseFFmpegForHls>
 </ApplicationSettings>

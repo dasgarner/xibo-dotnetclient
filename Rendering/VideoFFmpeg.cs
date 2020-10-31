@@ -38,6 +38,11 @@ namespace XiboClient.Rendering
         private MediaElement mediaElement;
 
         /// <summary>
+        /// Is this a stream or file?
+        /// </summary>
+        private bool isStream = false;
+
+        /// <summary>
         /// Constructor
         /// </summary>
         /// <param name="options"></param>
@@ -110,6 +115,9 @@ namespace XiboClient.Rendering
                 Trace.WriteLine(new LogMessage("Video", "RenderMedia: File " + _filePath + " not found."));
                 throw new FileNotFoundException();
             }
+
+            // Configure whether we are a stream or not.
+            this.isStream = !uri.IsFile;
 
             // Create a Media Element
             this.mediaElement = new MediaElement
@@ -203,7 +211,7 @@ namespace XiboClient.Rendering
                 }*/
 
                 // Handle Variant Bitrates
-                if (e.Options.VideoStream.Metadata.ContainsKey("variant_bitrate"))
+                if (this.isStream && e.Options.VideoStream.Metadata.ContainsKey("variant_bitrate"))
                 {
                     Debug.WriteLine("Variant Bitrate detected, choosing highest");
 
@@ -268,7 +276,7 @@ namespace XiboClient.Rendering
         /// <summary>
         /// Stop
         /// </summary>
-        public override void Stop(bool regionStopped)
+        public override void Stopped()
         {
             // Remove the event handlers
             this.mediaElement.MediaOpening -= MediaElement_MediaOpening;
@@ -282,7 +290,7 @@ namespace XiboClient.Rendering
             this.mediaElement.Close();
             this.mediaElement = null;
 
-            base.Stop(regionStopped);
+            base.Stopped();
         }
     }
 }
