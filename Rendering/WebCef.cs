@@ -51,6 +51,15 @@ namespace XiboClient.Rendering
                 Name = "region_" + this.regionId
             };
 
+            // Configure proxy
+            if (string.IsNullOrEmpty(ApplicationSettings.Default.ProxyUser))
+            {
+                CefSharp.Cef.UIThreadTaskFactory.StartNew(() =>
+                {
+                    webView.RequestHandler = new ProxyRequestHandler();
+                });
+            }
+
             webView.Visibility = System.Windows.Visibility.Hidden;
             webView.Loaded += WebView_Loaded;
             webView.LoadError += WebView_LoadError;

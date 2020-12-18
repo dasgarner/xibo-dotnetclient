@@ -70,6 +70,11 @@ namespace XiboClient.Rendering
         public delegate void MediaExpiredDelegate();
         public event MediaExpiredDelegate MediaExpiredEvent;
 
+        /// <summary>
+        /// Widget Date WaterMark
+        /// </summary>
+        private int _widgetAvailableTtl;
+
         public Region()
         {
             InitializeComponent();
@@ -145,6 +150,9 @@ namespace XiboClient.Rendering
                 if (!SetNextMediaNodeInOptions())
                 {
                     // For some reason we cannot set a media node... so we need this region to become invalid
+                    CacheManager.Instance.AddUnsafeItem(UnsafeItemType.Region, options.layoutId, options.regionId, "Unable to set any region media nodes.", _widgetAvailableTtl);
+
+                    // Throw this out so we remove the Layout
                     throw new InvalidOperationException("Unable to set any region media nodes.");
                 }
 
@@ -327,7 +335,7 @@ namespace XiboClient.Rendering
                 }
 
                 // Check isnt blacklisted
-                if (BlackList.Instance.BlackListed(this.options.mediaid))
+                if (CacheManager.Instance.IsUnsafeMedia(this.options.mediaid))
                 {
                     Trace.WriteLine(new LogMessage("Region - SetNextMediaNode", string.Format("MediaID [{0}] has been blacklisted.", this.options.mediaid)), LogType.Error.ToString());
 
@@ -352,6 +360,19 @@ namespace XiboClient.Rendering
                     // Increment the number of attempts and try again
                     numAttempts++;
 
+                    // Watermark the next earliest time we can expect this Widget to be available.
+                    if (this.options.FromDt > DateTime.Now)
+                    {
+                        if (_widgetAvailableTtl == 0)
+                        {
+                            _widgetAvailableTtl = (int)(this.options.FromDt - DateTime.Now).TotalSeconds;
+                        }
+                        else
+                        {
+                            _widgetAvailableTtl = Math.Min(_widgetAvailableTtl, (int)(this.options.FromDt - DateTime.Now).TotalSeconds);
+                        }
+                    }
+
                     // Carry on
                     continue;
                 }
@@ -363,7 +384,7 @@ namespace XiboClient.Rendering
                 if (this.options.type == "video" || this.options.type == "flash" || this.options.type == "image" || this.options.type == "powerpoint" || this.options.type == "audio" || this.options.type == "htmlpackage")
                 {
                     // Use the cache manager to determine if the file is valid
-                    validNode = CacheManager.Instance.IsValidPath(this.options.uri);
+                    validNode = CacheManager.Instance.IsValidPath(this.options.uri) && !CacheManager.Instance.IsUnsafeMedia(this.options.uri);
                 }
 
                 // If we have a valid node, break out of the loop
@@ -754,7 +775,7 @@ namespace XiboClient.Rendering
         /// <param name="regionStopped"></param>
         private void StopMedia(Media media, bool regionStopped)
         {
-            Trace.WriteLine(new LogMessage("Region", "StopMedia: Stopping..."), LogType.Audit.ToString());
+            Trace.WriteLine(new LogMessage("Region", "StopMedia: " + media.Id + " stopping, region stopped " + regionStopped), LogType.Audit.ToString());
 
             // Dispose of the current media
             try
@@ -784,6 +805,8 @@ namespace XiboClient.Rendering
         /// <param name="media"></param>
         private void Media_MediaStoppedEvent(Media media)
         {
+            Trace.WriteLine(new LogMessage("Region", "Media_MediaStoppedEvent: " + media.Id), LogType.Audit.ToString());
+
             media.MediaStoppedEvent -= Media_MediaStoppedEvent;
             media.Stopped();
 
@@ -949,7 +972,7 @@ namespace XiboClient.Rendering
                 }
 
                 // Resume the current media item
-                StartNext(0);
+                StartNext(this._currentPlaytime);
             }
             else
             {
@@ -957,7 +980,7 @@ namespace XiboClient.Rendering
                 this.currentSequence--;
 
                 // Resume the current media item
-                StartNext(this._currentPlaytime);
+                StartNext(0);
             }
 
             this._isPaused = false;

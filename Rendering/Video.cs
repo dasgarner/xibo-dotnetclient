@@ -24,6 +24,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Threading;
 
 namespace XiboClient.Rendering
 {
@@ -161,7 +162,10 @@ namespace XiboClient.Rendering
         /// <param name="e"></param>
         private void MediaElement_MediaOpened(object sender, RoutedEventArgs e)
         {
-            Debug.WriteLine("MediaElement_MediaOpened", "Video");
+            Trace.WriteLine(new LogMessage("Video", "MediaElement_MediaOpened: " + this.Id + " Opened, seek to: " + this._position), LogType.Audit.ToString());
+
+            // Open has been called.
+            this._openCalled = true;
 
             // Try to seek
             if (this._position > 0)
@@ -175,6 +179,8 @@ namespace XiboClient.Rendering
         /// </summary>
         public override void Stopped()
         {
+            Trace.WriteLine(new LogMessage("Video", "Stopped: " + this.Id), LogType.Audit.ToString());
+
             // Remove the event handlers
             this.mediaElement.MediaOpened -= MediaElement_MediaOpened;
             this.mediaElement.Loaded -= MediaElement_Loaded;
