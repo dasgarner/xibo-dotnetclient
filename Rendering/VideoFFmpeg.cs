@@ -61,7 +61,11 @@ namespace XiboClient.Rendering
             // Log and expire
             Trace.WriteLine(new LogMessage("Video", "MediaElement_MediaFailed: Media Failed. E = " + e.ErrorException.Message), LogType.Error.ToString());
 
-            Expired = true;
+            // Add this to a temporary blacklist so that we don't repeat it too quickly
+            CacheManager.Instance.AddUnsafeItem(UnsafeItemType.Media, LayoutId, Id, "Video Failed: " + e.ErrorException.Message, 120);
+
+            // Exipre
+            SignalElapsedEvent();
         }
 
         /// <summary>
@@ -71,6 +75,8 @@ namespace XiboClient.Rendering
         /// <param name="e"></param>
         private void MediaElement_MediaEnded(object sender, EventArgs e)
         {
+            Trace.WriteLine(new LogMessage("Video", "MediaElement_MediaEnded: " + this.Id + " Ended, looping: " + isLooping), LogType.Audit.ToString());
+
             // Should we loop?
             if (isLooping)
             {
@@ -90,9 +96,11 @@ namespace XiboClient.Rendering
         /// <param name="e"></param>
         private void MediaElement_Loaded(object sender, RoutedEventArgs e)
         {
+            Trace.WriteLine(new LogMessage("Video", "MediaElement_Loaded: " + this.Id + " Control loaded, calling Open."), LogType.Audit.ToString());
+
             try
             {
-                this.mediaElement.Play();
+                this.mediaElement.Open(new Uri(_filePath));
             }
             catch (Exception ex)
             {
@@ -175,9 +183,7 @@ namespace XiboClient.Rendering
 
             try
             {
-                // Start Player
-                this.mediaElement.Open(uri);
-
+                // Add to scene
                 this.MediaScene.Children.Add(this.mediaElement);
 
                 Trace.WriteLine(new LogMessage("Video", "RenderMedia: " + this.Id + ", added MediaElement and set source, detect end is " + _detectEnd), LogType.Audit.ToString());
@@ -198,6 +204,8 @@ namespace XiboClient.Rendering
         /// <param name="e"></param>
         private void MediaElement_MediaOpening(object sender, MediaOpeningEventArgs e)
         {
+            Trace.WriteLine(new LogMessage("Video", "MediaElement_MediaOpened: " + this.Id + " Opened, seek to: " + this._position), LogType.Audit.ToString());
+
             // We only do things on videos
             if (e.Options.VideoStream is StreamInfo videoStream)
             {
@@ -258,7 +266,7 @@ namespace XiboClient.Rendering
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        private void MediaElement_MediaOpened(object sender, Unosquare.FFME.Common.MediaOpenedEventArgs e)
+        private void MediaElement_MediaOpened(object sender, MediaOpenedEventArgs e)
         {
             Trace.WriteLine(new LogMessage("Video", "MediaElement_MediaOpened: " + this.Id + " Opened, seek to: " + this._position), LogType.Audit.ToString());
 
@@ -279,10 +287,11 @@ namespace XiboClient.Rendering
         /// <param name="e">The <see cref="MediaLogMessageEventArgs" /> instance containing the event data.</param>
         private void MediaElement_MediaMessageLogged(object sender, MediaLogMessageEventArgs e)
         {
-            if (e.MessageType == MediaLogMessageType.Trace)
+            if (e.AspectName == "Engine.Rendering")
                 return;
 
-            Debug.WriteLine(e);
+            Trace.WriteLine(new LogMessage("Video", "MediaElement_MediaOpened: " + this.Id + " ffmpeg log: " + e.ToString()), LogType.Audit.ToString());
+            //Debug.WriteLine(e);
         }
 
         /// <summary>
@@ -301,7 +310,10 @@ namespace XiboClient.Rendering
             this.mediaElement.MessageLogged -= MediaElement_MediaMessageLogged;
 
             // Try and clear some memory
-            this.mediaElement.Close();
+            if (this.mediaElement.IsOpen)
+            {
+                this.mediaElement.Close();
+            }
             this.mediaElement = null;
 
             base.Stopped();
