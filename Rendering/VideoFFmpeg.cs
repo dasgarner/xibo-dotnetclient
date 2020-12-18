@@ -204,7 +204,7 @@ namespace XiboClient.Rendering
         /// <param name="e"></param>
         private void MediaElement_MediaOpening(object sender, MediaOpeningEventArgs e)
         {
-            Trace.WriteLine(new LogMessage("Video", "MediaElement_MediaOpened: " + this.Id + " Opened, seek to: " + this._position), LogType.Audit.ToString());
+            Trace.WriteLine(new LogMessage("Video", "MediaElement_MediaOpening: " + this.Id + " Opening."), LogType.Audit.ToString());
 
             // We only do things on videos
             if (e.Options.VideoStream is StreamInfo videoStream)
@@ -290,7 +290,7 @@ namespace XiboClient.Rendering
             if (e.AspectName == "Engine.Rendering")
                 return;
 
-            Trace.WriteLine(new LogMessage("Video", "MediaElement_MediaOpened: " + this.Id + " ffmpeg log: " + e.ToString()), LogType.Audit.ToString());
+            Trace.WriteLine(new LogMessage("Video", "FFMpeg log: " + this.Id + " message: " + e.ToString()), LogType.Audit.ToString());
             //Debug.WriteLine(e);
         }
 
