@@ -34,8 +34,20 @@ namespace XiboClient.Rendering
         protected bool _detectEnd = false;
         protected bool isLooping = false;
         protected readonly bool isFullScreenRequest = false;
+
+        /// <summary>
+        /// Should this be visible? Audio sets this to false.
+        /// </summary>
         protected bool ShouldBeVisible { get; set; }
+
+        /// <summary>
+        /// Muted?
+        /// </summary>
         protected bool Muted { get; set; }
+
+        /// <summary>
+        /// Stretched?
+        /// </summary>
         protected bool Stretch { get; set; }
 
         /// <summary>
@@ -49,6 +61,7 @@ namespace XiboClient.Rendering
         /// <param name="options"></param>
         public VideoMedia(RegionOptions options) : base(options)
         {
+            // Videos should be visible
             this.ShouldBeVisible = true;
 
             _filePath = Uri.UnescapeDataString(options.uri).Replace('+', ' ');

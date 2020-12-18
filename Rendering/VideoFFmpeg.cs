@@ -101,6 +101,10 @@ namespace XiboClient.Rendering
             }
         }
 
+        /// <summary>
+        /// Render
+        /// </summary>
+        /// <param name="position"></param>
         public override void RenderMedia(double position)
         {
             // Save the position
@@ -112,7 +116,7 @@ namespace XiboClient.Rendering
 
             if (uri.IsFile && !File.Exists(_filePath))
             {
-                Trace.WriteLine(new LogMessage("Video", "RenderMedia: File " + _filePath + " not found."));
+                Trace.WriteLine(new LogMessage("Video", "RenderMedia: " + this.Id + ", File " + _filePath + " not found."));
                 throw new FileNotFoundException();
             }
 
@@ -127,11 +131,19 @@ namespace XiboClient.Rendering
                 LoadedBehavior = MediaPlaybackState.Manual
             };
 
+            // This is false if we're an audio module, otherwise video.
             if (!this.ShouldBeVisible)
             {
                 this.mediaElement.Width = 0;
                 this.mediaElement.Height = 0;
                 this.mediaElement.Visibility = Visibility.Hidden;
+            }
+            else
+            {
+                // Assert the Width/Height of the Parent
+                this.mediaElement.Width = Width;
+                this.mediaElement.Height = Height;
+                this.mediaElement.Visibility = Visibility.Visible;
             }
 
             // Handle stretching
@@ -168,7 +180,7 @@ namespace XiboClient.Rendering
 
                 this.MediaScene.Children.Add(this.mediaElement);
 
-                Trace.WriteLine(new LogMessage("Video", "RenderMedia: Video Started"), LogType.Audit.ToString());
+                Trace.WriteLine(new LogMessage("Video", "RenderMedia: " + this.Id + ", added MediaElement and set source, detect end is " + _detectEnd), LogType.Audit.ToString());
             }
             catch (Exception ex)
             {
@@ -248,7 +260,7 @@ namespace XiboClient.Rendering
         /// <param name="e"></param>
         private void MediaElement_MediaOpened(object sender, Unosquare.FFME.Common.MediaOpenedEventArgs e)
         {
-            Debug.WriteLine("MediaElement_MediaOpened", "Video");
+            Trace.WriteLine(new LogMessage("Video", "MediaElement_MediaOpened: " + this.Id + " Opened, seek to: " + this._position), LogType.Audit.ToString());
 
             // Try to seek
             if (this._position > 0)
@@ -278,6 +290,8 @@ namespace XiboClient.Rendering
         /// </summary>
         public override void Stopped()
         {
+            Trace.WriteLine(new LogMessage("Video", "Stopped: " + this.Id), LogType.Audit.ToString());
+
             // Remove the event handlers
             this.mediaElement.MediaOpening -= MediaElement_MediaOpening;
             this.mediaElement.MediaOpened -= MediaElement_MediaOpened;
