@@ -287,6 +287,9 @@ namespace XiboClient.Rendering
         /// <param name="e">The <see cref="MediaLogMessageEventArgs" /> instance containing the event data.</param>
         private void MediaElement_MediaMessageLogged(object sender, MediaLogMessageEventArgs e)
         {
+            /*if (e.MessageType == MediaLogMessageType.Trace)
+                return;*/
+            
             if (e.AspectName == "Engine.Rendering")
                 return;
 
