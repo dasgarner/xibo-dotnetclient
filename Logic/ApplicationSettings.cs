@@ -52,7 +52,7 @@ namespace XiboClient
 
         public string ClientVersion { get; } = "2 R259.0";
         public string Version { get; } = "5";
-        public int ClientCodeVersion { get; } = 258;
+        public int ClientCodeVersion { get; } = 259;
 
         private ApplicationSettings()
         {
