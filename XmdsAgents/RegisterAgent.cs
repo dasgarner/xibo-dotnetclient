@@ -42,6 +42,9 @@ namespace XiboClient.XmdsAgents
         public delegate void OnXmrReconfigureDelegate();
         public event OnXmrReconfigureDelegate OnXmrReconfigure;
 
+        public delegate void OnRegisterCompleteDelegate();
+        public event OnRegisterCompleteDelegate OnRegisterComplete;
+
         /// <summary>
         /// Wake Up
         /// </summary>
@@ -181,6 +184,9 @@ namespace XiboClient.XmdsAgents
                                 }
                             }
                         }
+
+                        // Complete!
+                        OnRegisterComplete?.Invoke();
                     }
                     catch (WebException webEx) when (webEx.Response is HttpWebResponse httpWebResponse && (int)httpWebResponse.StatusCode == 429)
                     {

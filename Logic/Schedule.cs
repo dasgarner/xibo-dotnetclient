@@ -58,6 +58,11 @@ namespace XiboClient
         /// </summary>
         private bool _stopCalled = false;
 
+        /// <summary>
+        /// Has XMDS wakeup been called?
+        /// </summary>
+        private bool _wakeupCalled = false;
+
         #region Threads and Agents
         // Key
         private HardwareKey _hardwareKey;
@@ -108,6 +113,7 @@ namespace XiboClient
             // Create a Register Agent
             _registerAgent = new RegisterAgent();
             _registerAgent.OnXmrReconfigure += _registerAgent_OnXmrReconfigure;
+            _registerAgent.OnRegisterComplete += _registerAgent_OnRegisterComplete;
             _registerAgentThread = new Thread(new ThreadStart(_registerAgent.Run));
             _registerAgentThread.Name = "RegisterAgentThread";
 
@@ -280,6 +286,20 @@ namespace XiboClient
         }
 
         /// <summary>
+        /// Called with register has completed successfully
+        /// </summary>
+        private void _registerAgent_OnRegisterComplete()
+        {
+            if (_wakeupCalled)
+            {
+                _wakeupCalled = false;
+
+                // Wake up schedule and Rf
+                _scheduleAndRfAgent.WakeUp();
+            }
+        }
+
+        /// <summary>
         /// XMR Subscriber Action
         /// </summary>
         void _xmrSubscriber_OnAction(Action.PlayerActionInterface action)
@@ -358,8 +378,12 @@ namespace XiboClient
         /// </summary>
         public void wakeUpXmds()
         {
+            // Wake up register, which will wake up schedule.
+            // we chain these together otherwise the checksum caching on register won't be updated
+            _wakeupCalled = true;
             _registerAgent.WakeUp();
-            _scheduleAndRfAgent.WakeUp();
+
+            // Log agent can wake up on its own
             _logAgent.WakeUp();
         }
 
