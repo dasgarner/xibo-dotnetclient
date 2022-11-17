@@ -465,7 +465,7 @@ namespace XiboClient.Rendering
             }
 
             // We cannot have a 0 duration here... not sure why we would... but
-            if (this.options.duration == 0 && this.options.type != "video" && this.options.type != "localvideo")
+            if (this.options.duration == 0 && this.options.type != "video" && this.options.type != "localvideo" && options.type != "audio")
             {
                 int emptyLayoutDuration = int.Parse(ApplicationSettings.Default.EmptyLayoutDuration.ToString());
                 this.options.duration = (emptyLayoutDuration == 0) ? 10 : emptyLayoutDuration;
