@@ -26,6 +26,7 @@ using System.Windows.Threading;
 using XiboClient.Action;
 using XiboClient.Adspace;
 using XiboClient.Control;
+using XiboClient.Integration.Nexmosphere;
 using XiboClient.Log;
 using XiboClient.Logic;
 using XiboClient.Stats;
@@ -108,6 +109,9 @@ namespace XiboClient
         // Local Web Server
         private EmbeddedServer _server;
         Thread _serverThread;
+
+        // Nexmosphere
+        private Nexmosphere _nexmosphere;
         #endregion
 
         /// <summary>
@@ -201,6 +205,9 @@ namespace XiboClient
             {
                 Name = "EmbeddedServer"
             };
+
+            // Nexmosphere
+            _nexmosphere = Nexmosphere.Instance;
         }
 
         /// <summary>
@@ -237,6 +244,13 @@ namespace XiboClient
 
             // Start the embedded server thread
             _serverThread.Start();
+
+            // Is Nexmosphere enabled?
+            if (_nexmosphere.Settings.IsEnabled)
+            {
+                _nexmosphere.OnMessageRecieved += _nexmosphere_OnMessageRecieved;
+                _nexmosphere.Start();
+            }
         }
 
         /// <summary>
@@ -723,6 +737,9 @@ namespace XiboClient
             _server.OnTriggerReceived -= EmbeddedServerOnTriggerReceived;
             _server.OnDurationReceived -= EmbeddedServerOnDurationReceived;
             _server.OnServerClosed -= _server_OnServerClosed;
+
+            // Nexmosphere
+            _nexmosphere.Stop();
         }
 
         /// <summary>
@@ -834,6 +851,24 @@ namespace XiboClient
         public void WakeUpScheduleManager()
         {
             _scheduleManager.RunNow();
+        }
+
+        /// <summary>
+        /// Nexmosphere message received.
+        /// </summary>
+        /// <param name="message"></param>
+        /// <exception cref="NotImplementedException"></exception>
+        private void _nexmosphere_OnMessageRecieved(Message message)
+        {
+            LogMessage.Audit("Schedule", "_nexmosphere_OnMessageRecieved", "Message received: " + message.Raw);
+
+            // TODO: load the tag into schedule criteria
+
+            // Trigger a webhook?
+            if (message.IsValid && _nexmosphere.Settings.IsTriggerWebhook)
+            {
+                OnTriggerReceived?.Invoke("webhook", message.WebHookTriggerCode, 0, 0);
+            }
         }
     }
 }

@@ -139,6 +139,12 @@
       <DependentUpon>InfoScreen.xaml</DependentUpon>
     </Compile>
     <Compile Include="Action\Action.cs" />
+    <Compile Include="Integration\Nexmosphere\Message.cs" />
+    <Compile Include="Integration\Nexmosphere\Nexmosphere.cs" />
+    <Compile Include="Integration\Nexmosphere\NexmosphereSettings.xaml.cs">
+      <DependentUpon>NexmosphereSettings.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Integration\Nexmosphere\Settings.cs" />
     <Compile Include="Logic\ApplicationSettings.cs" />
     <Compile Include="Logic\CacheManager.cs" />
     <Compile Include="Logic\HardwareKey.cs" />
@@ -202,6 +208,10 @@
     <Compile Include="XmdsAgents\StatAgent.cs" />
     <Compile Include="XmdsAgents\WidgetData.cs" />
     <Page Include="InfoScreen.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Integration\Nexmosphere\NexmosphereSettings.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

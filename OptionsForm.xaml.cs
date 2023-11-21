@@ -31,6 +31,7 @@ using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
+using XiboClient.Integration.Nexmosphere;
 using XiboClient.Stats;
 using XiboClient.XmdsAgents;
 
@@ -528,6 +529,12 @@ namespace XiboClient
                     }
                 }
             }
+        }
+
+        private void buttonNexmosphere_Click(object sender, RoutedEventArgs e)
+        {
+            NexmosphereSettings nexmosphereSettings = new NexmosphereSettings();
+            nexmosphereSettings.ShowDialog();
         }
     }
 }

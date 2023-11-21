@@ -42,9 +42,10 @@
                     <Label Content="Proxy Domain" HorizontalAlignment="Left" Margin="54,98,0,0" VerticalAlignment="Top" Width="110" Height="34" FontSize="16" Grid.ColumnSpan="2"/>
                     <TextBox x:Name="textBoxHardwareKey" HorizontalAlignment="Left" Height="35" Margin="83,136,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="582" Grid.Column="1" FontSize="16" VerticalContentAlignment="Center"/>
                     <Label Content="Hardware Key" HorizontalAlignment="Left" Margin="54,137,0,0" VerticalAlignment="Top" Width="110" Height="34" FontSize="16" Grid.ColumnSpan="2"/>
-                    <TextBox x:Name="textBoxSplashScreenReplacement" HorizontalAlignment="Left" Height="35" Margin="83,176,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="467" Grid.Column="1" FontSize="16" VerticalContentAlignment="Center"/>
+                    <TextBox x:Name="textBoxSplashScreenReplacement" HorizontalAlignment="Left" Height="35" Margin="83,176,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="352" Grid.Column="1" FontSize="16" VerticalContentAlignment="Center"/>
                     <Label Content="Splash Screen" HorizontalAlignment="Left" Margin="54,176,0,0" VerticalAlignment="Top" Width="110" Height="34" FontSize="16" Grid.ColumnSpan="2" RenderTransformOrigin="0.519,-1.218"/>
-                    <Button x:Name="buttonSplashScreenReplacement" Content="Browse" Grid.Column="1" HorizontalAlignment="Left" Margin="555,176,0,0" VerticalAlignment="Top" Width="110" Height="35" Click="Button_SplashScreenReplacement_Click"/>
+                    <Button x:Name="buttonSplashScreenReplacement" Content="Browse" Grid.Column="1" HorizontalAlignment="Left" Margin="440,175,0,0" VerticalAlignment="Top" Width="110" Height="35" Click="Button_SplashScreenReplacement_Click"/>
+                    <Button x:Name="buttonNexmosphere" Content="Nexmosphere" Grid.Column="1" HorizontalAlignment="Left" Margin="555,175,0,0" VerticalAlignment="Top" Width="110" Height="35" Click="buttonNexmosphere_Click" />
                 </Grid>
             </TabItem>
             <TabItem Header="About">

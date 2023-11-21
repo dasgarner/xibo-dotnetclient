@@ -24,6 +24,7 @@ using System.Diagnostics;
 using System.Text.RegularExpressions;
 using System.Windows;
 using System.Windows.Shapes;
+using XiboClient.Integration.Nexmosphere;
 
 namespace XiboClient.Action
 {
@@ -116,6 +117,10 @@ namespace XiboClient.Action
                 var httpStatus = command.RunAsync();
 
                 return IsValid(httpStatus.Result + "");
+            }
+            else if (CommandString.StartsWith("nexmosphere|"))
+            {
+                return Nexmosphere.Instance.SendCommand(CommandString.Replace("nexmosphere|", ""));
             }
             else
             {
